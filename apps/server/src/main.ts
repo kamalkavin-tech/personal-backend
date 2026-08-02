@@ -9,8 +9,21 @@ import { ConfigService } from '@nestjs/config';
 
 let appPromise: Promise<INestApplication> | undefined;
 
+/** Routes that must respond even when the DB/Redis are unreachable (cold-start probes). */
+function registerProbes(expressApp: express.Express): void {
+  expressApp.get(['/', '/health'], (_req: Request, res: Response) => {
+    res.json({ status: 'ok', service: 'vaultx-server', time: new Date().toISOString() });
+  });
+  expressApp.get('/favicon.ico', (_req: Request, res: Response) => {
+    res.status(204).end();
+  });
+}
+
 async function buildApp(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(express()), {
+  const rawApp = express();
+  registerProbes(rawApp);
+
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(rawApp), {
     bufferLogs: false,
   });
   const config = app.get(ConfigService);
@@ -23,13 +36,22 @@ async function buildApp(): Promise<INestApplication> {
     credentials: true,
   });
 
-  // Public readiness probe (bypasses the /api prefix; registered on the raw express app).
-  const expressApp = app.getHttpAdapter().getInstance() as express.Express;
-  expressApp.get(['/', '/health'], (_req: Request, res: Response) => {
-    res.json({ status: 'ok', service: 'vaultx-server', time: new Date().toISOString() });
-  });
-
-  await app.init();
+  try {
+    await app.init();
+  } catch (error) {
+    // DB/Redis unreachable (e.g. MONGO_URI missing on a fresh deploy).
+    // Probes keep answering and /api returns 503 instead of the function crashing.
+    const message = error instanceof Error ? error.message : String(error);
+    // eslint-disable-next-line no-console
+    console.error('[vaultx-server] app.init failed (probes only):', message);
+    rawApp.use('/api', (_req: Request, res: Response) => {
+      res.status(503).json({
+        statusCode: 503,
+        message: 'Service unavailable - backend dependencies (MongoDB) are not reachable. Check MONGO_URI and Vercel env vars.',
+        detail: message,
+      });
+    });
+  }
   return app;
 }
 
