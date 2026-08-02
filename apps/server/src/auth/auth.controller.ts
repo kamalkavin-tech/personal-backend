@@ -45,6 +45,14 @@ export class AuthController {
     res.cookie(JWT_REFRESH_COOKIE, token, this.tokens.refreshCookieOptions());
   }
 
+  /** Resolve the refresh token from (in priority order): JSON body, Bearer header, httpOnly cookie. */
+  private resolveRefreshToken(req: Request, bodyToken?: string): string | undefined {
+    if (bodyToken) return bodyToken;
+    const auth = req.headers.authorization;
+    if (auth?.startsWith('Bearer ')) return auth.slice(7);
+    return (req.cookies as Record<string, string>)[JWT_REFRESH_COOKIE];
+  }
+
   @Public()
   @Post('register')
   async register(
@@ -55,7 +63,7 @@ export class AuthController {
   ) {
     const result = await this.auth.register(body, { ip, ua });
     if (result.refreshToken) this.setRefresh(res, result.refreshToken);
-    return { accessToken: result.accessToken, user: result.user };
+    return { accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user };
   }
 
   @Public()
@@ -78,7 +86,7 @@ export class AuthController {
       return { requiresTwoFactor: true, pendingEmail: result.pendingEmail };
     }
     if (result.refreshToken) this.setRefresh(res, result.refreshToken);
-    return { accessToken: result.accessToken, user: result.user };
+    return { accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user };
   }
 
   @Public()
@@ -94,22 +102,30 @@ export class AuthController {
     const result = await this.auth.verify2fa(body, pending, { ip, ua });
     if (result.refreshToken) this.setRefresh(res, result.refreshToken);
     res.clearCookie(JWT_PENDING_COOKIE, { path: '/' });
-    return { accessToken: result.accessToken, user: result.user };
+    return { accessToken: result.accessToken, refreshToken: result.refreshToken, user: result.user };
   }
 
   @Public()
   @Post('refresh')
-  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token = (req.cookies as Record<string, string>)[JWT_REFRESH_COOKIE];
+  async refresh(
+    @Req() req: Request,
+    @Body('refreshToken') bodyToken: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const token = this.resolveRefreshToken(req, bodyToken);
     const result = await this.auth.refresh(token);
     this.setRefresh(res, result.refreshToken);
-    return { accessToken: result.accessToken };
+    return { accessToken: result.accessToken, refreshToken: result.refreshToken };
   }
 
   @Public()
   @Post('logout')
-  async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const token = (req.cookies as Record<string, string>)[JWT_REFRESH_COOKIE];
+  async logout(
+    @Req() req: Request,
+    @Body('refreshToken') bodyToken: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const token = this.resolveRefreshToken(req, bodyToken);
     await this.auth.logout(token, {});
     res.clearCookie(JWT_REFRESH_COOKIE, { path: '/' });
     res.clearCookie(JWT_PENDING_COOKIE, { path: '/' });

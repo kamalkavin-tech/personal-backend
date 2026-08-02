@@ -23,6 +23,12 @@ async function buildApp(): Promise<INestApplication> {
     credentials: true,
   });
 
+  // Public readiness probe (bypasses the /api prefix; registered on the raw express app).
+  const expressApp = app.getHttpAdapter().getInstance() as express.Express;
+  expressApp.get(['/', '/health'], (_req: Request, res: Response) => {
+    res.json({ status: 'ok', service: 'vaultx-server', time: new Date().toISOString() });
+  });
+
   await app.init();
   return app;
 }
@@ -35,8 +41,20 @@ function getApp(): Promise<INestApplication> {
 }
 
 export default async function handler(req: Request, res: Response) {
-  const app = await getApp();
-  return app.getHttpAdapter().getInstance()(req, res);
+  try {
+    const app = await getApp();
+    return app.getHttpAdapter().getInstance()(req, res);
+  } catch (error) {
+    // Cold-start init failed (e.g. DB unreachable on a fresh instance).
+    // Reset so the next invocation can retry instead of reusing a dead promise.
+    appPromise = undefined;
+    const message = error instanceof Error ? error.message : String(error);
+    // eslint-disable-next-line no-console
+    console.error('[vaultx-server] handler init failed:', message);
+    if (!res.headersSent) {
+      res.status(500).json({ statusCode: 500, message: 'Internal server error', detail: message });
+    }
+  }
 }
 
 if (require.main === module) {

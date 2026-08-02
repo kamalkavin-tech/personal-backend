@@ -23,7 +23,13 @@ import { ThrottlerBehindProxyGuard } from './common/throttler-behind-proxy.guard
     MongooseModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        uri: config.get<string>('MONGO_URI') ?? 'mongodb://vaultx:vaultx-secret@localhost:27017/vaultx?authSource=admin',
+        uri:
+          config.get<string>('MONGO_URI') ??
+          'mongodb://vaultx:vaultx-secret@localhost:27017/vaultx?authSource=admin',
+        // Fail fast on cold starts (serverless) instead of hanging ~30s
+        // waiting for an unreachable database.
+        serverSelectionTimeoutMS: Number(config.get('MONGO_SERVER_SELECTION_TIMEOUT_MS') ?? 5000),
+        bufferCommands: false,
       }),
     }),
     ThrottlerModule.forRootAsync({
