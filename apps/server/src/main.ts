@@ -52,7 +52,7 @@ export default async function handler(req: Request, res: Response) {
     // eslint-disable-next-line no-console
     console.error('[vaultx-server] handler init failed:', message);
     if (!res.headersSent) {
-      res.set(corsHeaders(req.headers.origin, undefined));
+      res.set(corsHeaders());
       res.status(500).json({ statusCode: 500, message: 'Internal server error', detail: message });
     }
   }

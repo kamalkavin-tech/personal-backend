@@ -1,22 +1,18 @@
 /**
  * Dependency-light CORS helpers (no NestJS imports) so probe endpoints and
  * error responses can attach CORS headers without bootstrapping the app.
+ *
+ * We intentionally use a NO-CREDENTIALS, wildcard-allow design:
+ * - The frontend never relies on cookies cross-site (SameSite=Lax blocks them
+ *   between frontend.vercel.app and backend.vercel.app), so the browser does
+ *   not send credentials and `Access-Control-Allow-Origin: *` is valid.
+ * - Auth is carried entirely by Authorization header + refresh token in the
+ *   request body, both of which work cross-site without credentials.
  */
 
-export function originAllowed(origin: string | undefined, frontendUrl: string | undefined): boolean {
-  if (!origin) return true; // non-browser requests (curl, server-to-server)
-  const normalized = origin.replace(/\/$/, '');
-  if (frontendUrl && normalized === frontendUrl.replace(/\/$/, '')) return true;
-  if (normalized === 'http://localhost:3000' || normalized === 'http://localhost:5173') return true;
-  // Vercel production + preview deployments (frontend.vercel.app / *.vercel.app)
-  return /^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(normalized);
-}
-
-export function corsHeaders(origin: string | undefined, frontendUrl: string | undefined): Record<string, string> {
-  const allowed = originAllowed(origin, frontendUrl) ? origin ?? '*' : '';
+export function corsHeaders(): Record<string, string> {
   return {
-    'Access-Control-Allow-Origin': allowed,
-    'Access-Control-Allow-Credentials': 'true',
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,HEAD,POST,PATCH,DELETE,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Max-Age': '86400',

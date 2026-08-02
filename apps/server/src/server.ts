@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser';
 import express, { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { originAllowed, corsHeaders } from './cors';
+import { corsHeaders } from './cors';
 
 /** Routes that answer even when the DB/Redis are unreachable. */
 function registerProbes(expressApp: express.Express): void {
@@ -18,14 +18,10 @@ function registerProbes(expressApp: express.Express): void {
   });
 }
 
-function registerDependencyFallback(
-  expressApp: express.Express,
-  frontendUrl: string | undefined,
-  detail: string,
-): void {
+function registerDependencyFallback(expressApp: express.Express, detail: string): void {
   // Answer CORS preflights + real requests with a clear 503 when the DB is unreachable.
-  const attachCors = (req: Request, res: Response, next: NextFunction) => {
-    res.set(corsHeaders(req.headers.origin, frontendUrl));
+  const attachCors = (_req: Request, res: Response, next: NextFunction) => {
+    res.set(corsHeaders());
     next();
   };
   expressApp.use('/api', attachCors, (req: Request, res: Response) => {
@@ -49,15 +45,13 @@ export async function buildServerApp(): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule, new ExpressAdapter(rawApp), {
     bufferLogs: false,
   });
-  const config = app.get(ConfigService);
-  const frontendUrl = config.get<string>('FRONTEND_URL');
 
   app.setGlobalPrefix('api');
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({
-    origin: (origin, callback) => callback(null, originAllowed(origin ?? undefined, frontendUrl)),
-    credentials: true,
+    origin: true, // reflect any origin; safe because credentials: false
+    credentials: false,
     methods: ['GET', 'HEAD', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
@@ -70,7 +64,7 @@ export async function buildServerApp(): Promise<INestApplication> {
     const message = error instanceof Error ? error.message : String(error);
     // eslint-disable-next-line no-console
     console.error('[vaultx-server] app.init failed (probes only):', message);
-    registerDependencyFallback(rawApp, frontendUrl, message);
+    registerDependencyFallback(rawApp, message);
   }
   return app;
 }
