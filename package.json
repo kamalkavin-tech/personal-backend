@@ -1,0 +1,22 @@
+{
+  "name": "personal-backend",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run build --workspace @vaultx/shared && npm run dev --workspace @vaultx/server",
+    "build": "npm run build --workspace @vaultx/shared && npm run build --workspace @vaultx/server",
+    "typecheck": "npm run build --workspace @vaultx/shared && npm run typecheck --workspace @vaultx/server",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:down": "docker compose -f docker/docker-compose.yml down"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

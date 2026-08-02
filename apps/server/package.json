@@ -1,0 +1,44 @@
+{
+  "name": "@vaultx/server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@nestjs/common": "^10.4.15",
+    "@nestjs/config": "^3.3.0",
+    "@nestjs/core": "^10.4.15",
+    "@nestjs/jwt": "^10.2.0",
+    "@nestjs/mongoose": "^10.1.0",
+    "@nestjs/platform-express": "^10.4.15",
+    "@nestjs/throttler": "^6.2.1",
+    "@node-rs/argon2": "^1.8.3",
+    "@vaultx/shared": "*",
+    "cookie-parser": "^1.4.7",
+    "gridfs-stream": "^1.1.1",
+    "helmet": "^7.1.0",
+    "ioredis": "^5.4.1",
+    "mongoose": "^8.8.3",
+    "multer": "^1.4.5-lts.1",
+    "mongodb": "^6.10.0",
+    "otplib": "^12.0.1",
+    "qrcode": "^1.5.4",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^4.17.21",
+    "@types/gridfs-stream": "^0.5.36",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.9.0",
+    "@types/qrcode": "^1.5.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}
