@@ -99,7 +99,23 @@ function getApp(): Promise<INestApplication> {
   return appPromise;
 }
 
+const PROBE_PATHS = new Set(['/', '/health', '/favicon.ico']);
+
 export default async function handler(req: Request, res: Response) {
+  const rawUrl = (req as { url?: string }).url ?? '/';
+  const path = rawUrl.split('?')[0];
+
+  // Probes must answer FAST without bootstrapping NestJS + MongoDB.
+  // On Vercel Hobby (10s cap), bootstrapping on a cold start would crash.
+  if (PROBE_PATHS.has(path)) {
+    if (path === '/favicon.ico') {
+      res.status(204).end();
+      return;
+    }
+    res.json({ status: 'ok', service: 'vaultx-server', time: new Date().toISOString() });
+    return;
+  }
+
   try {
     const app = await getApp();
     return app.getHttpAdapter().getInstance()(req, res);
