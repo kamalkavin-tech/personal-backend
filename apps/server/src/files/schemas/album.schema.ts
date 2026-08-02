@@ -5,10 +5,10 @@ export type AlbumDocument = HydratedDocument<Album>;
 
 @Schema({ timestamps: true, collection: 'albums' })
 export class Album {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   name: string;
 
   @Prop({ type: Date, default: Date.now })

@@ -8,39 +8,39 @@ export type FileEntryDocument = HydratedDocument<FileEntry>;
 export class FileEntry {
   _id?: unknown;
 
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   fsId: string;
 
-  @Prop({ enum: FILE_KINDS })
+  @Prop({ type: String, enum: FILE_KINDS })
   kind: FileKind;
 
-  @Prop()
+  @Prop({ type: String })
   mime?: string;
 
-  @Prop({ default: 0 })
+  @Prop({ type: Number, default: 0 })
   size: number;
 
   /** AES-encrypted original filename (client side). */
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   encryptedName: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   iv: string;
 
   /** IV used for the AES-GCM encryption of the file content itself. */
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   contentIv: string;
 
   @Prop({ type: String, default: null })
   albumId?: string | null;
 
-  @Prop({ default: [] })
+  @Prop({ type: [String], default: [] })
   tags: string[];
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   favorite: boolean;
 
   @Prop({ type: Date, default: null })

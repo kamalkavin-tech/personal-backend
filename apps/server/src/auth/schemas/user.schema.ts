@@ -5,25 +5,25 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true, collection: 'users' })
 export class User {
-  @Prop({ required: true, unique: true, lowercase: true, index: true })
+  @Prop({ type: String, required: true, unique: true, lowercase: true, index: true })
   email: string;
 
-  @Prop()
+  @Prop({ type: String })
   name?: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   hashedAuthKey: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   kekSalt: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   authSalt: string;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   iterations: number;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   wrappedDEK: string;
 
   @Prop({
@@ -56,13 +56,13 @@ export class User {
     notifications: boolean;
   };
 
-  @Prop()
+  @Prop({ type: String })
   resetTokenHash?: string;
 
-  @Prop()
+  @Prop({ type: Date })
   resetTokenExpires?: Date;
 
-  @Prop()
+  @Prop({ type: Date })
   deletedAt?: Date;
 
   @Prop({ type: Date, default: Date.now })

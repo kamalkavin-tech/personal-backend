@@ -5,19 +5,19 @@ export type AuditLogDocument = HydratedDocument<AuditLog>;
 
 @Schema({ timestamps: true, collection: 'auditlogs' })
 export class AuditLog {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   action: string;
 
-  @Prop()
+  @Prop({ type: String })
   ip?: string;
 
-  @Prop()
+  @Prop({ type: String })
   ua?: string;
 
-  @Prop()
+  @Prop({ type: String })
   meta?: string;
 
   @Prop({ type: Date, default: Date.now })

@@ -5,22 +5,22 @@ export type DeviceDocument = HydratedDocument<Device>;
 
 @Schema({ timestamps: true, collection: 'devices' })
 export class Device {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   name: string;
 
-  @Prop()
+  @Prop({ type: String })
   platform?: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ type: String, required: true, unique: true })
   fingerprint: string;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   trusted: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   verified: boolean;
 
   @Prop({ type: Date, default: Date.now })

@@ -5,19 +5,19 @@ export type NotificationDocument = HydratedDocument<Notification>;
 
 @Schema({ timestamps: true, collection: 'notifications' })
 export class Notification {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   title: string;
 
-  @Prop()
+  @Prop({ type: String })
   body?: string;
 
-  @Prop({ default: 'info' })
+  @Prop({ type: String, default: 'info' })
   type: string;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   read: boolean;
 
   @Prop({ type: Date, default: Date.now })

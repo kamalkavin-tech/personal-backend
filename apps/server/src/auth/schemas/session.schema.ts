@@ -5,31 +5,31 @@ export type SessionDocument = HydratedDocument<Session>;
 
 @Schema({ timestamps: true, collection: 'sessions' })
 export class Session {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop()
+  @Prop({ type: String })
   deviceId?: string;
 
-  @Prop()
+  @Prop({ type: String })
   deviceName?: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ type: String, required: true, unique: true })
   tokenHash: string;
 
-  @Prop()
+  @Prop({ type: String })
   ua?: string;
 
-  @Prop()
+  @Prop({ type: String })
   ip?: string;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   trusted: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   current?: boolean;
 
-  @Prop({ required: true })
+  @Prop({ type: Date, required: true })
   expiresAt: Date;
 
   @Prop({ type: Date, default: Date.now })

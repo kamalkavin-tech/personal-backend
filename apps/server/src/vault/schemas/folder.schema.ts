@@ -6,16 +6,16 @@ export type FolderDocument = HydratedDocument<Folder>;
 
 @Schema({ timestamps: true, collection: 'folders' })
 export class Folder {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ enum: [...VAULT_TYPES, 'all'], default: 'all' })
+  @Prop({ type: String, enum: [...VAULT_TYPES, 'all'], default: 'all' })
   type: VaultType | 'all';
 
-  @Prop({ default: '#6366f1' })
+  @Prop({ type: String, default: '#6366f1' })
   color: string;
 
   @Prop({ type: Date, default: null })
