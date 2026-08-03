@@ -6,7 +6,7 @@
       "runtime": "nodejs20.x",
       "maxDuration": 30,
       "memory": 1024,
-      "includeFiles": ["apps/server/dist/**"]
+      "includeFiles": "apps/server/dist/**"
     }
   }
 }
