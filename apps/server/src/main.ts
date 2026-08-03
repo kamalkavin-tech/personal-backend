@@ -24,6 +24,16 @@ type ServerModule = { buildServerApp: () => Promise<import('@nestjs/common').INe
 let serverModulePromise: Promise<ServerModule> | undefined;
 let appPromise: Promise<import('@nestjs/common').INestApplication> | undefined;
 
+const rawApp = express();
+rawApp.use('/api', (req, res, next) => {
+  res.set(corsHeaders(req.headers.origin as string | undefined, allowedOrigins));
+  if (req.method === 'OPTIONS') {
+    res.status(204).end();
+    return;
+  }
+  next();
+});
+
 async function getServerApp(): Promise<import('@nestjs/common').INestApplication> {
   if (!appPromise) {
     serverModulePromise = import('./server');
