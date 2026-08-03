@@ -5,19 +5,19 @@ export type BackupDocument = HydratedDocument<Backup>;
 
 @Schema({ timestamps: true, collection: 'backups' })
 export class Backup {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop()
+  @Prop({ type: String })
   fsId?: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   filename: string;
 
-  @Prop({ default: 0 })
+  @Prop({ type: Number, default: 0 })
   size: number;
 
-  @Prop({ enum: ['auto', 'manual', 'export'], default: 'manual' })
+  @Prop({ type: String, enum: ['auto', 'manual', 'export'], default: 'manual' })
   kind: 'auto' | 'manual' | 'export';
 
   @Prop({ type: Date, default: null })

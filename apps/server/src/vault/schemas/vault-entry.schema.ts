@@ -6,35 +6,35 @@ export type VaultEntryDocument = HydratedDocument<VaultEntry>;
 
 @Schema({ timestamps: true, collection: 'vaultentries' })
 export class VaultEntry {
-  @Prop({ required: true, index: true })
+  @Prop({ type: String, required: true, index: true })
   userId: string;
 
-  @Prop({ required: true, enum: VAULT_TYPES })
+  @Prop({ type: String, required: true, enum: VAULT_TYPES })
   type: VaultType;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   encrypted: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   iv: string;
 
   /** AES-encrypted title (client side). Opaque to the server. */
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   title: string;
 
   @Prop({ type: String, default: null })
   folderId?: string | null;
 
-  @Prop({ default: [] })
+  @Prop({ type: [String], default: [] })
   tags: string[];
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   favorite: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   pinned: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   archived: boolean;
 
   @Prop({ type: Date, default: null })

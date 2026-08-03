@@ -5,19 +5,19 @@ export type AuthEventDocument = HydratedDocument<AuthEvent>;
 
 @Schema({ timestamps: true, collection: 'authevents' })
 export class AuthEvent {
-  @Prop()
+  @Prop({ type: String, required: false })
   userId?: string;
 
-  @Prop()
+  @Prop({ type: String })
   email?: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   type: 'login' | 'register' | 'failed' | 'logout' | '2fa';
 
-  @Prop()
+  @Prop({ type: String })
   ip?: string;
 
-  @Prop()
+  @Prop({ type: String })
   ua?: string;
 
   @Prop({ type: Date, default: Date.now })
