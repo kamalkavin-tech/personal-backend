@@ -12,7 +12,7 @@ export function parseCorsOrigins(value?: string): string[] {
 }
 
 export function isAllowedPreviewOrigin(origin: string): boolean {
-  return /^https:\/\/personal-frontend-web(-git-[^.]+)?\.vercel\.app$/.test(origin);
+  return /^https:\/\/personal-frontend(?:-web|-[a-z0-9-]+)?(?:-git-[^.]+)?\.vercel\.app$/.test(origin);
 }
 
 export function corsHeaders(origin: string | undefined, allowedOrigins: string[] = []): Record<string, string> {
