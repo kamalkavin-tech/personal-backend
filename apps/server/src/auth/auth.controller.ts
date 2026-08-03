@@ -45,6 +45,10 @@ export class AuthController {
     res.cookie(JWT_REFRESH_COOKIE, token, this.tokens.refreshCookieOptions());
   }
 
+  private setPending(res: Response, token: string): void {
+    res.cookie(JWT_PENDING_COOKIE, token, this.tokens.pendingCookieOptions());
+  }
+
   @Public()
   @Post('register')
   async register(
@@ -74,7 +78,7 @@ export class AuthController {
   ) {
     const result = await this.auth.login(body, { ip, ua });
     if (result.requiresTwoFactor) {
-      res.cookie(JWT_PENDING_COOKIE, result.pending!, { httpOnly: true, sameSite: 'lax', maxAge: 300_000, path: '/' });
+      this.setPending(res, result.pending!);
       return { requiresTwoFactor: true, pendingEmail: result.pendingEmail };
     }
     if (result.refreshToken) this.setRefresh(res, result.refreshToken);
@@ -93,7 +97,7 @@ export class AuthController {
     const pending = (req.cookies as Record<string, string>)[JWT_PENDING_COOKIE];
     const result = await this.auth.verify2fa(body, pending, { ip, ua });
     if (result.refreshToken) this.setRefresh(res, result.refreshToken);
-    res.clearCookie(JWT_PENDING_COOKIE, { path: '/' });
+    res.clearCookie(JWT_PENDING_COOKIE, this.tokens.clearCookieOptions());
     return { accessToken: result.accessToken, user: result.user };
   }
 
@@ -111,8 +115,8 @@ export class AuthController {
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const token = (req.cookies as Record<string, string>)[JWT_REFRESH_COOKIE];
     await this.auth.logout(token, {});
-    res.clearCookie(JWT_REFRESH_COOKIE, { path: '/' });
-    res.clearCookie(JWT_PENDING_COOKIE, { path: '/' });
+    res.clearCookie(JWT_REFRESH_COOKIE, this.tokens.clearCookieOptions());
+    res.clearCookie(JWT_PENDING_COOKIE, this.tokens.clearCookieOptions());
     return { ok: true };
   }
 
@@ -202,7 +206,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
   ) {
     await this.auth.deleteAccount(user.sub, body.authKey, { ip, ua });
-    res.clearCookie(JWT_REFRESH_COOKIE, { path: '/' });
+    res.clearCookie(JWT_REFRESH_COOKIE, this.tokens.clearCookieOptions());
     return { ok: true };
   }
 }

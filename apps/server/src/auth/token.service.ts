@@ -48,13 +48,43 @@ export class TokenService {
     return crypto.randomBytes(48).toString('base64url');
   }
 
-  refreshCookieOptions(): { httpOnly: boolean; sameSite: 'lax'; secure: boolean; path: string; maxAge: number } {
+  refreshCookieOptions(): {
+    httpOnly: boolean;
+    sameSite: 'none';
+    secure: boolean;
+    path: string;
+    maxAge: number;
+  } {
     return {
       httpOnly: true,
-      sameSite: 'lax' as const,
+      sameSite: 'none',
       secure: this.config.get<string>('NODE_ENV') === 'production',
       path: '/',
       maxAge: this.refreshTtlSeconds * 1000,
+    };
+  }
+
+  pendingCookieOptions(): {
+    httpOnly: boolean;
+    sameSite: 'none';
+    secure: boolean;
+    path: string;
+    maxAge: number;
+  } {
+    return {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: this.config.get<string>('NODE_ENV') === 'production',
+      path: '/',
+      maxAge: 300_000,
+    };
+  }
+
+  clearCookieOptions(): { sameSite: 'none'; secure: boolean; path: string } {
+    return {
+      sameSite: 'none',
+      secure: this.config.get<string>('NODE_ENV') === 'production',
+      path: '/',
     };
   }
 }
