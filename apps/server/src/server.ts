@@ -5,8 +5,17 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import express, { NextFunction, Request, Response } from 'express';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
-import { corsHeaders } from './cors';
+import { AllExceptionsFilter } from './common/all-exceptions.filter';
+import { corsHeaders, parseCorsOrigins } from './cors';
+
+function getAllowedOrigins(): string[] {
+  return [
+    ...parseCorsOrigins(process.env.CORS_ORIGINS),
+    process.env.FRONTEND_URL ?? '',
+  ]
+    .filter(Boolean)
+    .filter((value, index, self) => self.indexOf(value) === index);
+}
 
 /** Routes that answer even when the DB/Redis are unreachable. */
 function registerProbes(expressApp: express.Express): void {
@@ -18,12 +27,12 @@ function registerProbes(expressApp: express.Express): void {
   });
 }
 
-function registerDependencyFallback(expressApp: express.Express, detail: string): void {
-  // Answer CORS preflights + real requests with a clear 503 when the DB is unreachable.
+function registerDependencyFallback(expressApp: express.Express, detail: string, allowedOrigins: string[]): void {
   const attachCors = (_req: Request, res: Response, next: NextFunction) => {
-    res.set(corsHeaders());
+    res.set(corsHeaders(_req.headers.origin as string | undefined, allowedOrigins));
     next();
   };
+
   expressApp.use('/api', attachCors, (req: Request, res: Response) => {
     if (req.method === 'OPTIONS') {
       res.status(204).end();
@@ -42,6 +51,9 @@ export async function buildServerApp(): Promise<INestApplication> {
   const rawApp = express();
   registerProbes(rawApp);
 
+  const allowedOrigins = getAllowedOrigins();
+  const corsOrigins = allowedOrigins.length ? allowedOrigins : ['http://localhost:3000'];
+
   const app = await NestFactory.create(AppModule, new ExpressAdapter(rawApp), {
     bufferLogs: false,
   });
@@ -50,21 +62,20 @@ export async function buildServerApp(): Promise<INestApplication> {
   app.use(helmet());
   app.use(cookieParser());
   app.enableCors({
-    origin: true, // reflect any origin; safe because credentials: false
-    credentials: false,
+    origin: corsOrigins,
+    credentials: true,
     methods: ['GET', 'HEAD', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
+  app.useGlobalFilters(new AllExceptionsFilter(allowedOrigins));
 
   try {
     await app.init();
   } catch (error) {
-    // DB/Redis unreachable (e.g. MONGO_URI missing on a fresh deploy).
-    // Probes keep answering and /api returns 503 instead of the function crashing.
     const message = error instanceof Error ? error.message : String(error);
     // eslint-disable-next-line no-console
     console.error('[vaultx-server] app.init failed (probes only):', message);
-    registerDependencyFallback(rawApp, message);
+    registerDependencyFallback(rawApp, message, allowedOrigins);
   }
   return app;
 }
