@@ -1,1 +1,1 @@
-module.exports = require('../apps/server/dist/main').default;
+module.exports = require('../apps/server/dist/main.js').default;

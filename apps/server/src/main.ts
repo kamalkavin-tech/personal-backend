@@ -61,7 +61,6 @@ export default async function handler(req: Request, res: Response) {
     return expressApp(req, res);
   } catch (error) {
     appPromise = undefined;
-    serverModulePromise = undefined;
     const message = error instanceof Error ? error.message : String(error);
     console.error('[vaultx-server] handler init failed:', message);
     if (!res.headersSent) {
