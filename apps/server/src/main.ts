@@ -13,10 +13,12 @@ import { corsHeaders, parseCorsOrigins } from './cors';
 const PROBE_PATHS = new Set(['/', '/health', '/favicon.ico']);
 const allowedOrigins = [
   ...parseCorsOrigins(process.env.CORS_ORIGINS),
-  process.env.FRONTEND_URL ?? '',
+  process.env.FRONTEND_URL,
+  process.env.NEXT_PUBLIC_FRONTEND_URL,
+  'https://personal-frontend-web.vercel.app',
 ]
   .filter(Boolean)
-  .filter((value, index, self) => self.indexOf(value) === index);
+  .filter((value, index, self) => self.indexOf(value) === index) as string[];
 
 type ServerModule = { buildServerApp: () => Promise<import('@nestjs/common').INestApplication> };
 let serverModulePromise: Promise<ServerModule> | undefined;

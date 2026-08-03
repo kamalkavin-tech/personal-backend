@@ -21,6 +21,7 @@ export function corsHeaders(origin: string | undefined, allowedOrigins: string[]
   if (origin && allowedOrigins.includes(origin)) {
     headers['Access-Control-Allow-Origin'] = origin;
     headers['Access-Control-Allow-Credentials'] = 'true';
+    headers['Vary'] = 'Origin';
   }
 
   return headers;

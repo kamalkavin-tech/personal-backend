@@ -11,10 +11,12 @@ import { corsHeaders, parseCorsOrigins } from './cors';
 function getAllowedOrigins(): string[] {
   return [
     ...parseCorsOrigins(process.env.CORS_ORIGINS),
-    process.env.FRONTEND_URL ?? '',
+    process.env.FRONTEND_URL,
+    process.env.NEXT_PUBLIC_FRONTEND_URL,
+    'https://personal-frontend-web.vercel.app',
   ]
     .filter(Boolean)
-    .filter((value, index, self) => self.indexOf(value) === index);
+    .filter((value, index, self) => self.indexOf(value) === index) as string[];
 }
 
 /** Routes that answer even when the DB/Redis are unreachable. */
@@ -65,7 +67,7 @@ export async function buildServerApp(): Promise<INestApplication> {
     origin: corsOrigins,
     credentials: true,
     methods: ['GET', 'HEAD', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Set-Cookie'],
   });
   app.useGlobalFilters(new AllExceptionsFilter(allowedOrigins));
 
