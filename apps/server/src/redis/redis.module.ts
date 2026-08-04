@@ -29,7 +29,8 @@ export class CacheService implements Cache, OnModuleDestroy {
       this.client = new IORedis(url, {
         maxRetriesPerRequest: 1,
         lazyConnect: true,
-        retryStrategy: (times) => (times > 3 ? null : Math.min(times * 500, 2000)),
+        connectTimeout: Number(config.get('REDIS_CONNECT_TIMEOUT_MS') ?? 1000),
+        retryStrategy: (times) => (times > 3 ? null : Math.min(times * 250, 1000)),
       });
       this.client.on('error', () => {
         this.available = false;

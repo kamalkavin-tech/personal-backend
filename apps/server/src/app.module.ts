@@ -22,15 +22,19 @@ import { ThrottlerBehindProxyGuard } from './common/throttler-behind-proxy.guard
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        uri:
-          config.get<string>('MONGO_URI') ??
-          'mongodb://vaultx:vaultx-secret@localhost:27017/vaultx?authSource=admin',
-        // Fail fast on cold starts (serverless) instead of hanging ~30s
-        // waiting for an unreachable database.
-        serverSelectionTimeoutMS: Number(config.get('MONGO_SERVER_SELECTION_TIMEOUT_MS') ?? 2500),
-        bufferCommands: false,
-      }),
+      useFactory: (config: ConfigService) => {
+        const uri = config.get<string>('MONGO_URI');
+        if (!uri) {
+          throw new Error('MONGO_URI is required in environment variables. Remove any localhost fallback and provide a remote MongoDB URI.');
+        }
+        return {
+          uri,
+          // Fail fast on cold starts (serverless) instead of hanging ~30s
+          // waiting for an unreachable database.
+          serverSelectionTimeoutMS: Number(config.get('MONGO_SERVER_SELECTION_TIMEOUT_MS') ?? 2500),
+          bufferCommands: false,
+        };
+      },
     }),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService],
