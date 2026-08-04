@@ -19,6 +19,7 @@
     "@node-rs/argon2": "^1.8.3",
     "@vaultx/shared": "*",
     "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "gridfs-stream": "^1.1.1",
     "helmet": "^7.1.0",
     "ioredis": "^5.4.1",
