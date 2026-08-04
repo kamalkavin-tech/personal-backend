@@ -8,6 +8,12 @@
       "includeFiles": "apps/server/dist/**"
     }
   },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index"
+    }
+  ],
   "headers": [
     {
       "source": "/api/(.*)",
